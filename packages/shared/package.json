@@ -1,0 +1,17 @@
+{
+  "name": "@billing-saas/shared",
+  "version": "1.0.0",
+  "description": "Shared code between frontend, backend and mobile",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.0"
+  }
+}

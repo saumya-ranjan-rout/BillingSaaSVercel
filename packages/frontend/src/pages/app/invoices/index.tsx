@@ -1,0 +1,99 @@
+import React, { useState } from 'react';
+import DashboardLayout from '../../../components/layout/DashboardLayout';
+import InvoiceList from '../../../components/invoices/InvoiceList';
+import InvoiceForm from '../../../components/invoices/InvoiceForm';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { Invoice } from '../../../types';
+import { toast } from 'sonner'; // ✅ added for toast display
+
+const Invoices: React.FC = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // ✅ added state for refresh trigger
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setIsFormOpen(true);
+  };
+
+  const handleViewInvoice = (invoice: Invoice) => {
+    setViewingInvoice(invoice);
+    setIsViewOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingInvoice(null);
+  };
+
+  const handleCloseView = () => {
+    setIsViewOpen(false);
+    setViewingInvoice(null);
+  };
+
+  // const handleSuccess = () => {
+  //   handleCloseForm();
+  //   window.location.reload();
+  // };
+
+    const handleSuccess = () => {
+    toast.success('Invoice saved successfully ✅'); // ✅ toast will now show properly
+    handleCloseForm();
+    setRefreshKey((prev) => prev + 1); // ✅ trigger list reload instead of window reload
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Invoices</h1>
+          <Button onClick={() => setIsFormOpen(true)}>
+            Create Invoice
+          </Button>
+        </div>
+
+        {/* <InvoiceList 
+          onEditInvoice={handleEditInvoice}
+          onViewInvoice={handleViewInvoice}
+        /> */}
+
+               {/* ✅ Pass refreshKey to trigger refetch on InvoiceList */}
+        <InvoiceList 
+          onEditInvoice={handleEditInvoice}
+          onViewInvoice={handleViewInvoice}
+          refreshKey={refreshKey}
+        />
+
+        <Modal
+          isOpen={isFormOpen}
+          onClose={handleCloseForm}
+          title={editingInvoice ? 'Edit Invoice' : 'Create Invoice'}
+          size="xl"
+        >
+          <InvoiceForm
+            invoice={editingInvoice}
+            onSuccess={handleSuccess}
+            onCancel={handleCloseForm}
+          />
+        </Modal>
+
+        {/* <Modal
+          isOpen={isViewOpen}
+          onClose={handleCloseView}
+          title="Invoice Details"
+          size="xl"
+        >
+          <InvoiceView
+            invoice={viewingInvoice}
+            onClose={handleCloseView}
+          />
+        </Modal> */}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Invoices;

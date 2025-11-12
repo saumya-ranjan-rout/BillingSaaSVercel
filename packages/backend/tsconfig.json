@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "removeComments": true,
+    "baseUrl": "./src",
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": ["*"],
+      "@shared/*": ["../../shared/*"],
+       "@/utils/*": ["utils/*"],
+      "@/types/*": ["types/*"],
+      "@/entities/*": ["entities/*"],
+      "@/services/*": ["services/*"],
+      "@/controllers/*": ["controllers/*"],
+      "@/middleware/*": ["middleware/*"]
+    },
+    // "typeRoots": ["./node_modules/@types", "./src/types"],
+    // "types": ["node", "express"],
+        "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": ["node", "express"],
+
+    //  "typeRoots": ["./src/types", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
