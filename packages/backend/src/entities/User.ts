@@ -29,7 +29,8 @@ export enum UserRole {
   MEMBER = 'member',
   USER = 'user',
   PROFESSIONAL = 'professional', 
-  SUPER_USER = 'super_user'
+  SUPER_USER = 'super_user',
+  PROFESSIONAL_USER = 'professional_user'
 }
 
 export enum UserStatus {
@@ -81,6 +82,9 @@ export class User extends TenantAwareEntity {
 
   @Column({ type: 'uuid', nullable: true })
   tenantId: string;
+  
+   @Column({ type: 'uuid', nullable: true })
+  backupTenantId: string;
 
    @Column({ type: "timestamp", nullable: true })
   lastLoginAt?: Date;

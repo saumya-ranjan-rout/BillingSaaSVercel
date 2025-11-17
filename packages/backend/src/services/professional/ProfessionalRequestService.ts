@@ -121,84 +121,150 @@ async getRequests(user: any) {
 }
 
 
-async getProfessionals(user: any) {
+async getProfessionals(user: User) {
   const today = new Date();
 
   if (user.role === UserRole.PROFESSIONAL) {
-   // console.log("CASE 1: PROFESSIONAL → get all tenants with active subscriptions");
+    // CASE 1: PROFESSIONAL → get all tenants with active subscriptions
+const today = new Date();
 
-    // Subquery: select the FIRST admin (lowest id or earliest createdAt) per tenant
-    const subQuery = this.userRepo
-      .createQueryBuilder("u")
-      .select("u.id")
-      .where("u.role = :role", { role: "admin" })
-      .andWhere("u.status = :status", { status: "active" })
-      .andWhere("u.tenantId = tenant.id")
-      .orderBy("u.createdAt", "ASC") // ✅ safer than MIN() for UUIDs
-      .limit(1);
+const tenants = await this.tenantRepo
+  .createQueryBuilder("tenant")
+  .innerJoin("tenant.subscriptions", "subscription", "subscription.endDate > :today", { today })
+ .where("(tenant.accountType IS NULL OR tenant.accountType != :accountType)", {
+  accountType: "professional",
+})
+  .orderBy("tenant.name", "ASC")
+  .getMany();
 
-    const tenants = await this.tenantRepo
-      .createQueryBuilder("tenant")
-      .leftJoin("tenant.subscriptions", "subscription")
-      .leftJoin(
-        User,
-        "user",
-        `user.id = (${subQuery.getQuery()})`
-      )
-      .setParameters(subQuery.getParameters())
-       .where("subscription.endDate > :today", { today })
-     .where("tenant.accountType <> :accountType", { accountType: "professional" })
-      .select([
-        "tenant.id AS tenantId",
-        "tenant.name AS tenantName",
-        "user.id AS id",
-        "user.firstName AS firstName",
-        "user.lastName AS lastName",
-        "user.email AS email",
-      ])
-      .orderBy("tenant.name", "ASC")
-      .getRawMany();
+  //console.log("tenants", tenants);
+const result = [];
 
-    //  console.log("tenants", tenants);
+for (const tenant of tenants) {
+  // fetch the first active admin user for each tenant
+  const user = await this.userRepo
+    .createQueryBuilder("u")
+    .where("u.tenantId = :tenantId", { tenantId: tenant.id })
+    .andWhere("u.role = :adminRole", { adminRole: UserRole.ADMIN })
+    .andWhere("u.status = :status", { status: "active" })
+    .orderBy("u.createdAt", "ASC")
+    .getOne();
+if(user){
+  result.push({
+    tenantId: tenant.id,
+    tenantName: tenant.name,
+    id: user?.id || null,
+    firstName: user?.firstName || null,
+    lastName: user?.lastName || null,
+    email: user?.email || null,
+  });
+  }
+}
 
-    return tenants.map((t: any) => ({
-      id: t.id,
-      firstName: t.firstname,
-      lastName: t.lastname,
-      email: t.email,
-      tenantId: t.tenantid,
-      tenantName: t.tenantname,
-    }));
+//console.log("tenantsWithAdmins", result);
+return result;
   } else {
-   // console.log("CASE 2: ADMIN → get PROFESSIONAL users with active tenant subscriptions");
-
+    // CASE 2: ADMIN → get PROFESSIONAL users with active tenant subscriptions
     const professionals = await this.userRepo
       .createQueryBuilder("user")
-      .leftJoin("user.tenant", "tenant")
-      .leftJoin("tenant.subscriptions", "subscription")
+      .leftJoinAndSelect("user.tenant", "tenant")
+      .leftJoinAndSelect("tenant.subscriptions", "subscription")
       .where("user.role = :role", { role: UserRole.PROFESSIONAL })
       .andWhere("subscription.endDate > :today", { today })
-      .select([
-        "user.id AS id",
-        "user.firstName AS firstName",
-        "user.lastName AS lastName",
-        "user.email AS email",
-        "tenant.id AS tenantId",
-        "tenant.name AS tenantName",
-      ])
       .orderBy("user.firstName", "ASC")
-      .getRawMany();
+      .getMany();
 
-    return professionals.map((p: any) => ({
+    return professionals.map((p) => ({
       id: p.id,
-      firstName: p.firstname,
-      lastName: p.lastname,
+      firstName: p.firstName,
+      lastName: p.lastName,
       email: p.email,
-      tenantId: p.tenantid,
-      tenantName: p.tenantname,
+      tenantId: p.tenant?.id,
+      tenantName: p.tenant?.name,
     }));
   }
 }
+
+
+// async getProfessionals(user: any) {
+//   const today = new Date();
+
+//   if (user.role === UserRole.PROFESSIONAL) {
+//    // console.log("CASE 1: PROFESSIONAL → get all tenants with active subscriptions");
+
+//     // Subquery: select the FIRST admin (lowest id or earliest createdAt) per tenant
+//     const subQuery = this.userRepo
+//       .createQueryBuilder("u")
+//       .select("u.id")
+//       .where("u.role = :role", { role: "admin" })
+//       .andWhere("u.status = :status", { status: "active" })
+//       .andWhere("u.tenantId = tenant.id")
+//       .orderBy("u.createdAt", "ASC") // ✅ safer than MIN() for UUIDs
+//       .limit(1);
+
+//     const tenants = await this.tenantRepo
+//       .createQueryBuilder("tenant")
+//       // .leftJoin("tenant.subscriptions", "subscription")
+//      .leftJoin(Subscription, "subscription", "subscription.tenantId = tenant.id")
+//       .leftJoin(
+//         User,
+//         "user",
+//         `user.id = (${subQuery.getQuery()})`
+//       )
+//       .setParameters(subQuery.getParameters())
+//        .where("subscription.endDate > :today", { today })
+//      .where("tenant.accountType <> :accountType", { accountType: "professional" })
+//       .select([
+//         "tenant.id AS tenantId",
+//         "tenant.name AS tenantName",
+//         "user.id AS id",
+//         "user.firstName AS firstName",
+//         "user.lastName AS lastName",
+//         "user.email AS email",
+//       ])
+//       .orderBy("tenant.name", "ASC")
+//       .getRawMany();
+
+//       console.log("tenants", tenants);
+
+//     return tenants.map((t: any) => ({
+//       id: t.id,
+//       firstName: t.firstname,
+//       lastName: t.lastname,
+//       email: t.email,
+//       tenantId: t.tenantid,
+//       tenantName: t.tenantname,
+//     }));
+//   } else {
+//    // console.log("CASE 2: ADMIN → get PROFESSIONAL users with active tenant subscriptions");
+
+//     const professionals = await this.userRepo
+//       .createQueryBuilder("user")
+//       .leftJoin("user.tenant", "tenant")
+//       .leftJoin("tenant.subscriptions", "subscription")
+//       .where("user.role = :role", { role: UserRole.PROFESSIONAL })
+//       .andWhere("subscription.endDate > :today", { today })
+//       .select([
+//         "user.id AS id",
+//         "user.firstName AS firstName",
+//         "user.lastName AS lastName",
+//         "user.email AS email",
+//         "tenant.id AS tenantId",
+//         "tenant.name AS tenantName",
+//       ])
+//       .orderBy("user.firstName", "ASC")
+//       .getRawMany();
+
+//     return professionals.map((p: any) => ({
+//       id: p.id,
+//       firstName: p.firstname,
+//       lastName: p.lastname,
+//       email: p.email,
+//       tenantId: p.tenantid,
+//       tenantName: p.tenantname,
+//     }));
+//   }
+// }
 
 
 

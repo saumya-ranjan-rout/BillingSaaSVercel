@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { CustomerController } from '../controllers/CustomerController';
 import { CustomerService } from '../services/customer/CustomerService';
 import { CacheService } from '../services/cache/CacheService';
+import { AuthService } from '../services/auth/AuthService';
 import { authMiddleware } from '../middleware/auth';
 import { tenantMiddleware } from '../middleware/tenant';
 import { rbacMiddleware } from '../middleware/rbac';
@@ -10,11 +11,14 @@ import { validationMiddleware } from '../middleware/validation';
 import { customerSchema } from '../utils/validators';
 import { cacheMiddleware } from '../middleware/cache'; // ✅ added
 import { checkSubscription } from '../middleware/checkSubscription';  // ✅ added
+import { switchTenantMiddleware } from "../middleware/switchTenantMiddleware";
+
 
 const router = Router();
 const customerService = new CustomerService();
 const cacheService = new CacheService();
-const customerController = new CustomerController(customerService, cacheService);
+const authService = new AuthService();
+const customerController = new CustomerController(customerService, cacheService, authService);
 
 // ✅ All routes require authentication and tenant context
 router.use(authMiddleware, tenantMiddleware, checkSubscription);
@@ -62,6 +66,21 @@ router.delete(
   '/:id',
   rbacMiddleware(['delete:customers']),
   customerController.deleteCustomer.bind(customerController)
+);
+
+// ----------------- Switch Tenant -----------------
+// router.put(
+//   '/switch-tenant/:tenantId',
+//   rbacMiddleware(['update:users']),
+//   customerController.updateUser.bind(customerController)
+// );
+// router.post('/switch-tenant', customerController.switchTenant.bind(customerController));
+router.get(
+
+  '/switchTenant/:id/:role',
+
+  customerController.switchTenant.bind(customerController)
+
 );
 
 export default router;

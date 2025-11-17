@@ -15,6 +15,8 @@ import { cn } from '../../../lib/utils';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useApi } from "@/hooks/useApi";
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -27,6 +29,13 @@ interface NavItem {
   children?: { name: string; href: string }[];
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  tenantId: string;
+}
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/app/dashboard', icon: Home },
   { name: 'Users', href: '/app/users', icon: Users },
@@ -39,20 +48,43 @@ const navigation: NavItem[] = [
   { name: 'Loyalty', href: '/app/loyality', icon: BarChart3 },
   { name: 'Reports', href: '/app/reports', icon: BarChart3 },
   { name: 'Settings', href: '/app/settings', icon: Settings },
-    { name: 'Request Professional', href: '/app/professional-requests', icon: User },
+
+    { name: 'Request', href: '/app/professional-requests', icon: User },
   //  { name: 'Super Admin', href: '/SuperAdminPage', icon: User },
 ];
+
+
+
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const [openMenus, setOpenMenus] = useState<string[]>([]);
+   const [user, setUser] = useState<User | null>(null);
+
+const { get, patch } = useApi<any>();
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await get("/api/auth/me");
+       // console.log("user", res);
+        setUser(res.user);
+
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
 
 
-
-
-
-
+const filteredNavigation = navigation.filter((item) => {
+  if (user?.role === "professional_user") {
+    return item.name !== "Billing" && item.name !== "Request";
+  }
+  return true;
+});
   const toggleMenu = (menu: string) => {
     setOpenMenus((prev) =>
       prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]
@@ -94,9 +126,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="mt-8">
+        {/* <nav className="mt-8">
           <div className="px-4 space-y-2">
-            {navigation.map((item) => {
+            {navigation.map((item) => { */}
+            <nav className="mt-8">
+  <div className="px-4 space-y-2">
+    {!user ? (
+      <div className="text-gray-400 text-sm px-2">Loading...</div>
+    ) : (
+      filteredNavigation.map((item) => {
               const isActive = item.href && router.pathname === item.href;
 
               if (item.children) {
@@ -117,7 +155,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                           isOpen ? "text-white" : "text-gray-400 group-hover:text-white"
                         )}
                       />
-                      {item.name}
+                      {/* {item.name} */}
+                        {item.name === "Request" ? (
+    user?.role === "admin" ? (
+      "Request Professional"
+    ) : (
+      "Request Business"
+    )
+  ) : (
+    item.name
+  )}
                     </button>
 
                     {isOpen && (
@@ -162,12 +209,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       isActive ? "text-white" : "text-gray-400 group-hover:text-white"
                     )}
                   />
-                  {item.name}
+                  {/* {item.name} */}
+  {item.name === "Request" ? (
+    user?.role === "admin" ? (
+      "Request Professional"
+    ) : (
+      "Request Business"
+    )
+  ) : (
+    item.name
+  )}
                 </Link>
               );
-            })}
-          </div>
-        </nav>
+              })
+    )}
+  </div>
+</nav>
       </div>
     </>
   );

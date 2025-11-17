@@ -1,20 +1,38 @@
 
 
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { Bell, Menu, Search, User, LogOut } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { selectCurrentUser, logout } from '../../../features/auth/authSlice';
 import { useRouter } from 'next/router';
-
+import { setCredentials, setError, selectAuthError } from "../../../features/auth/authSlice";
+import { toast } from 'sonner';
+import { useApi } from '../../../hooks/useApi';
 interface HeaderProps {
   onMenuClick: () => void;
 }
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  tenantId: string;
 
+}
+interface Tenant {
+  id: string;
+  name: string;
+  businessName: string;
+}
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const user = useAppSelector(selectCurrentUser);
+  // const user = useAppSelector(selectCurrentUser);
+     const [user, setUser] = useState<User | null>(null);
+       const [tenant, setTenant] = useState<Tenant | null>(null);
   const dispatch = useAppDispatch();
   const router = useRouter();
+    const { get: gett } = useApi<any>();
 
   const toggleProfileMenu = () => setIsProfileOpen(prev => !prev);
 
@@ -24,8 +42,52 @@ const handleLogout = async () => {
   console.log("Redirecting to login...");
   window.location.href = "/auth/login"; // always works
 };
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await gett("/api/auth/mewithtenant");
+        console.log("header user", res);
+        setUser(res.user);
+        setTenant(res.tenant);
 
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
+    };
 
+    fetchUser();
+  }, []);
+      const viewBusiness = async (id: string, role: string) => {
+   
+       if (!confirm('Are you sure you want to switch tenant?')) return;
+   
+   
+   
+       try {
+   
+         const response = await gett(`/api/customers/switchTenant/${id}/${role}`);
+   
+        // console.log("jiku",response);
+   
+          dispatch(setCredentials({ user: response.user, token: response.accessToken }));
+   
+               localStorage.setItem("token", response.accessToken);
+   
+               localStorage.setItem("user", JSON.stringify(response.user));
+   
+         toast.success('Tenant switched successfully 🗑️');
+   
+    window.location.href = "/app/dashboard";
+   
+       } catch (error: any) {
+   
+         console.error('Tenant switching failed:', error);
+   
+         toast.error(error?.message ||'Failed to switch tenant ❌');
+   
+       }
+   
+     };
   
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -49,6 +111,26 @@ const handleLogout = async () => {
               placeholder="Search..."
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             /> */}
+
+{user?.role === 'professional_user' && (
+  <p>
+    You are viewing business of{" "}
+    <strong style={{ backgroundColor: "red", padding: "2px 6px", color: "#fff", borderRadius: "4px" }}>
+      {tenant?.businessName}
+
+       
+    </strong>
+    
+     <button
+  onClick={() => viewBusiness(user?.id, "professional")}
+  className="ml-2 px-3 py-1 text-sm rounded-full bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition"
+>
+  Return Back
+</button>
+
+  </p>
+)}
+
           </div>
         </div>
 

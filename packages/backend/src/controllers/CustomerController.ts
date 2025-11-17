@@ -4,6 +4,10 @@ import { CustomerService } from '../services/customer/CustomerService';
 import { CacheService } from '../services/cache/CacheService';
 import logger from '../utils/logger';
 import { stat } from 'fs';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { AuthService } from '../services/auth/AuthService';
+import { User ,UserRole } from "../entities/User";
+import { AppDataSource } from "../config/database";
 //  console.log("Hi CustomerController");
 // Helper function to safely extract error message
 function getErrorMessage(error: unknown): string {
@@ -14,7 +18,12 @@ function getErrorMessage(error: unknown): string {
 }
  
 export class CustomerController {
-  constructor(private customerService: CustomerService, private cacheService: CacheService) {}
+   private jwt: typeof jwt; 
+  constructor(private customerService: CustomerService, private cacheService: CacheService,private authService: AuthService,  private userRepo = AppDataSource.getRepository(User) ) {
+
+
+     this.jwt = jwt;
+  }
  
   async createCustomer(req: Request, res: Response) {
     try {
@@ -81,6 +90,9 @@ await this.cacheService.invalidatePattern(`cache:${tenantId}:/api/customers*`); 
   }
  
   async getCustomers(req: Request, res: Response) {
+
+    //console.log("Hi CustomerController getCustomers",req);
+
     //console.log("Hi CustomerController getCustomers");
     try {
       // Check if user is authenticated
@@ -116,7 +128,7 @@ await this.cacheService.invalidatePattern(`cache:${tenantId}:/api/customers*`); 
       }, 120); // Cache for 2 minutes
 
 
-       console.log("customers",customers);
+      // console.log("customers",customers);
       res.json(customers);
     } catch (error) {
       logger.error('Error fetching customers:', error);
@@ -241,4 +253,135 @@ await this.cacheService.invalidatePattern(`cache:${tenantId}:/api/customers*`); 
       res.status(400).json({ error: getErrorMessage(error) });
     }
   }
+
+
+   async updateUser(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { tenantId } = req.params;
+
+    const loggedtenantId = req.user.tenantId;
+    const loggedId = req.user.id;
+
+    const user = await this.customerService.updateUser(tenantId, loggedtenantId, loggedId);
+
+//console.log(await this.cacheService.rediss.keys('*'));
+     await this.cacheService.invalidatePattern(`*${loggedtenantId}*`);
+//console.log(await this.cacheService.rediss.keys('*'));
+
+    res.json({ success: true, user });
+  } catch (error) {
+    logger.error('Error updating user:', error);
+    res.status(400).json({ error: getErrorMessage(error) });
+  }
+}
+
+
+ async switchTenant(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { id, role } = req.params;
+    const user = req.user;
+
+    let resolvedRole: UserRole;
+    let tenantId: string | number;
+
+    // Case 1: Professional user → tenantId comes from URL param
+    if (role === "professional_user") {
+      resolvedRole = UserRole.PROFESSIONAL_USER;
+      tenantId = id;
+    }
+
+    // Case 2: Admin / Normal user → tenantId comes from DB
+    else {
+      resolvedRole = UserRole.PROFESSIONAL;
+
+      const loggedUser = await this.userRepo.findOne({
+        where: { id: user.id },
+        relations: ["tenant"],
+      });
+
+      if (!loggedUser || !loggedUser.tenant) {
+        return res.status(400).json({ error: "Tenant not found" });
+      }
+
+      tenantId = loggedUser.tenant.id;
+    }
+
+    // Build payload
+    const payload = {
+      userId: user.id,
+      tenantId,
+      email: user.email,
+      role: resolvedRole,
+      permissions: [],
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
+    const result = await this.customerService.switchTenant(payload);
+
+    return res.json({
+      success: true,
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+  } catch (error: any) {
+    console.error("Login error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+
+// async switchTenant(req: Request, res: Response) {
+//   try {
+//     const newTenantId = req.params.tenantId;
+
+//     if (!newTenantId) {
+//       return res.status(400).json({ error: "tenantId is required" });
+//     }
+
+//     const currentUser = req.user;
+
+//     // FIX: assert req.user exists
+//     if (!currentUser) {
+//       return res.status(401).json({ error: "Unauthorized: User missing in request" });
+//     }
+
+//     const updatedPayload = {
+//       userId: currentUser.id,
+//       tenantId: newTenantId,
+//       email: currentUser.email,
+//       role: "professional_user",  // or dynamic role if needed
+//       permissions: [],  // optional, update with correct permissions
+//       firstName: currentUser.firstName,
+//       lastName: currentUser.lastName
+//     };
+
+//     const result = await this.authService.switchTenant(updatedPayload);  // Pass correct object (not string)
+    
+//     return res.json({
+//       success: true,
+//       user: result.user,
+//       accessToken: result.accessToken,
+//       refreshToken: result.refreshToken
+//     });
+
+//   } catch (err) {
+//     console.error("Error switching tenant:", err);
+//     return res.status(500).json({ error: "Server error while switching tenant" });
+//   }
+// }
+
+
+
+
+
 }

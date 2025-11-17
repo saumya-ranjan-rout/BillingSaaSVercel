@@ -32,6 +32,7 @@ const authController = new AuthController(authService);
 
 // Routes (no cache for login or POSTs)
 router.post('/login', authController.login.bind(authController));
+
 router.post('/super-user-login', authController.superUserlogin.bind(authController));
 // router.post('/login', (req: Request, res: Response, next) => {
 //   console.log('🔥 /login route is being hit!');
@@ -56,10 +57,18 @@ router.get(
 // Public routes
 router.get('/me', authMiddleware, (req: Request, res: Response) => {
   if (!req.user) {
+  
     return res.status(401).json({ success: false, message: 'Not authenticated' });
   }
+  //  console.log('auth routes:',req.user);
   res.json({ success: true, user: req.user });
 });
+
+router.get(
+  '/mewithtenant',
+  authMiddleware,   // cache result for 2 minutes
+  authController.meWithTenant.bind(authController)
+);
 
 router.post(
   '/',

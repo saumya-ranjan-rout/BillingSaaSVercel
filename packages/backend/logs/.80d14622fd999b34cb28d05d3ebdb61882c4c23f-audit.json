@@ -1,0 +1,30 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "E:\\BillingSoftware\\packages\\backend\\logs\\.80d14622fd999b34cb28d05d3ebdb61882c4c23f-audit.json",
+    "files": [
+        {
+            "date": 1762938649981,
+            "name": "E:\\BillingSoftware\\packages\\backend\\logs\\audit-2025-11-12.log",
+            "hash": "d152254130e5dbd56bfc10e3781a39dd62ce49990bfba37deace5a545ead55e3"
+        },
+        {
+            "date": 1763095026362,
+            "name": "E:\\BillingSoftware\\packages\\backend\\logs\\audit-2025-11-14.log",
+            "hash": "cbc1d334f3e3e804d5afe5295b4d6203f2b6e8f8658aac0acd4928a7ada642bd"
+        },
+        {
+            "date": 1763181431102,
+            "name": "E:\\BillingSoftware\\packages\\backend\\logs\\audit-2025-11-15.log",
+            "hash": "cf6a9eb022d0696f04e7861f652664b8a010b3baea79ab60e52efc2896924879"
+        },
+        {
+            "date": 1763353794644,
+            "name": "E:\\BillingSoftware\\packages\\backend\\logs\\audit-2025-11-17.log",
+            "hash": "75f63c154e955af2b368c7cf8072197cae5e88b3846d232e00c14549674c0e95"
+        }
+    ],
+    "hashType": "sha256"
+}

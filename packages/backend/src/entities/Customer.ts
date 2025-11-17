@@ -100,6 +100,10 @@ payments: PaymentInvoice[];
 
     @OneToMany(() => CustomerLoyalty, loyalty => loyalty.customer)
   loyaltyData: CustomerLoyalty[];
+
+    // ✅ Add these virtual fields (NO decorator)
+
+  checkSubscription?: "active" | "inactive";
 }
 
 

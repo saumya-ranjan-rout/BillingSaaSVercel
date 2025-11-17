@@ -9,6 +9,7 @@ import { BaseService } from "../BaseService";
 import { BadRequestError, UnauthorizedError } from "../../utils/errors";
 import { EmailService } from "../external/EmailService";
 
+
 export interface AuthPayload {
   userId: string;
   tenantId: string;
@@ -139,6 +140,34 @@ const hashedPassword = await bcrypt.hash(data.password.trim(), 12);
 
     return user;
   }
+async switchTenant(updatedPayload: AuthPayload): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+  // Fetch the full User object by userId
+  const user = await this.repository.findOne({
+    where: { id: updatedPayload.userId }  // Correct query syntax
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Update the necessary fields based on the payload
+  user.tenantId = updatedPayload.tenantId;
+  user.role = UserRole[updatedPayload.role as keyof typeof UserRole]; // Ensure it's a valid enum value
+  user.firstName = updatedPayload.firstName;
+  user.lastName = updatedPayload.lastName;
+
+  // Save the updated user
+  await this.repository.save(user);
+
+  // Generate tokens using the updated user data
+  const accessToken = this.generateToken(updatedPayload);
+  const refreshToken = this.generateRefreshToken(updatedPayload);
+
+  // Return the updated user, access token, and refresh token
+  return { user, accessToken, refreshToken };
+}
+
+
 
   /**
    * Login a user with credentials

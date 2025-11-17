@@ -54,12 +54,17 @@ export interface Customer {
     pincode: string;
   };
     requestedBy: {
+      id: string;
+      tenantId: string;
     firstName: string;
     lastName: string;
     role: string;
     email: string;
+
   };
   requestedTo: {
+    id: string;
+   tenantId: string;
     firstName: string;
     lastName: string;
     role: string;
@@ -72,6 +77,8 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+   checkSubscription?: "active" | "inactive";
+
 }
 
 export interface Vendor {

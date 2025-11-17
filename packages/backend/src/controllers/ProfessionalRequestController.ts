@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import { ProfessionalRequestService } from "../services/professional/ProfessionalRequestService";
+import { User ,UserRole } from "../entities/User";
+import { AppDataSource } from "../config/database";
 
 export class ProfessionalRequestController {
   private service = new ProfessionalRequestService();
+  private userRepo = AppDataSource.getRepository(User);
 
   async createRequest(req: Request, res: Response) {
     try {
@@ -28,17 +31,29 @@ export class ProfessionalRequestController {
     }
   }
 
-  async getProfessionals(req: Request, res: Response) {
-   // console.log("Hi user getProfessionals in ProfessionalRequestController", req.user);
-    try {
-      const user = req.user; // from auth middleware
-
-      const professionals = await this.service.getProfessionals(user);
-      res.json(professionals);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+async getProfessionals(req: Request, res: Response) {
+  try {
+    const userData = req.user;
+    if (!userData) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+
+    const user = await this.userRepo.findOne({
+      where: { id: userData.id },
+      relations: ["tenant"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const professionals = await this.service.getProfessionals(user);
+    res.json(professionals);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
   }
+}
+
 
   async updateStatus(req: Request, res: Response) {
     try {

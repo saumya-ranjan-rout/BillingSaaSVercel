@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Table } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { Pagination } from "@/components/ui/Pagination";
+
 import {
   Select,
   SelectTrigger,
@@ -18,12 +19,14 @@ interface ProfessionalRequest {
   email: string;
   status: string;
   requestedBy: {
+    id: string;
     firstName: string;
     lastName: string;
     role: string;
     email: string;
   };
   requestedTo: {
+    id: string;
     firstName: string;
     lastName: string;
     role: string;
@@ -31,10 +34,18 @@ interface ProfessionalRequest {
   };
   metadata?: any;
 }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  tenantId: string;
+}
 
 const ProfessionalRequestList: React.FC = () => {
   const [requests, setRequests] = useState<ProfessionalRequest[]>([]);
   const [loading, setLoading] = useState(true);
+   const [user, setUser] = useState<User | null>(null);
   const [filters, setFilters] = useState({
     status: "",
   });
@@ -57,7 +68,7 @@ const ProfessionalRequestList: React.FC = () => {
       });
 
       const res = await get(`/api/professional-requests?${queryParams}`);
-      console.log("res", res);
+     // console.log("res", res);
       setRequests(res || []);
       if (res.pagination) setPagination(res.pagination);
     } catch (error: any) {
@@ -71,6 +82,20 @@ const ProfessionalRequestList: React.FC = () => {
   // useEffect(() => {
   //   fetchRequests();
   // }, [fetchRequests]);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await get("/api/auth/me");
+       // console.log("user", res);
+        setUser(res.user);
+
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
   fetchRequests();
@@ -91,7 +116,7 @@ const ProfessionalRequestList: React.FC = () => {
   // ✅ Handle filter change
   const handleFilterChange = (key: string, value: string) => {
     const newValue = value === "all" ? "" : value;
-    alert(newValue);
+    //alert(newValue);
     setFilters((prev) => ({ ...prev, [key]: newValue }));
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
@@ -128,7 +153,11 @@ const ProfessionalRequestList: React.FC = () => {
       <div className="font-medium text-gray-900">
         {row.requestedBy?.firstName} {row.requestedBy?.lastName}
       </div>
-      <div className="text-sm text-gray-500">{row.requestedBy?.role}</div>
+      <div className="text-sm text-gray-500">
+  {row.requestedBy?.role === "admin"
+    ? "business user"
+    : `${row.requestedBy?.role} user`}
+</div>
     </div>
   ),
 },
@@ -140,7 +169,11 @@ const ProfessionalRequestList: React.FC = () => {
       <div className="font-medium text-gray-900">
         {row.requestedTo?.firstName} {row.requestedTo?.lastName}
       </div>
-      <div className="text-sm text-gray-500">{row.requestedTo?.role}</div>
+<div className="text-sm text-gray-500">
+  {row.requestedTo?.role === "admin"
+    ? "business user"
+    : `${row.requestedTo?.role} user`}
+</div>
     </div>
   ),
 },
@@ -149,33 +182,38 @@ const ProfessionalRequestList: React.FC = () => {
       header: "Status",
       render: (value: string) => getStatusBadge(value || "Pending"),
     },
-   {
+ {
   key: "actions",
   header: "Actions",
   render: (value: any, row: ProfessionalRequest) => {
-    // Check if the status is "Rejected"
+    // Hide actions if status is "Rejected"
     if (row.status === "Rejected") {
-      return null; // Hide the buttons if status is "Rejected"
+      return null;
     }
 
     return (
       <div className="flex gap-2">
-        <button
-          onClick={() => updateStatus(row.id, "Approved")}
-          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-        >
-          Approve
-        </button>
+        {/* Show Approve button only if logged-in user is NOT the requester */}
+        {user?.id !== row.requestedBy?.id && (
+          <button
+            onClick={() => updateStatus(row.id, "Approved")}
+            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+          >
+            Approve
+          </button>
+        )}
+
         <button
           onClick={() => updateStatus(row.id, "Rejected")}
           className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
         >
-          Reject
+          Reject 
         </button>
       </div>
     );
   },
-},
+}
+
   ];
 
   if (loading) {

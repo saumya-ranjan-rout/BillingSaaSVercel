@@ -36,7 +36,7 @@ router.get(
   rbacMiddleware(["read:invoices", "read:customers"]),
   cacheMiddleware("1 minute"), // ✅ Cache for 1 minute
   async (req, res) => {
-    console.log("Dashboard route hit!");
+   // console.log("user:",req.user);
     try {
       const user = (req as any).user;
       const tenantId = user?.tenantId ?? user?.tenant?.id;

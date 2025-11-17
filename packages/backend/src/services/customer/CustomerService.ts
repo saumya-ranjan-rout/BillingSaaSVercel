@@ -1,15 +1,43 @@
-import { Repository, ILike, IsNull } from 'typeorm';
+import { Repository, ILike, IsNull,MoreThanOrEqual } from 'typeorm';
 import { AppDataSource } from '../../config/database';
 import { Customer } from '../../entities/Customer';
+import { User ,UserRole ,UserStatus} from '../../entities/User';
+import { Subscription } from '../../entities/Subscription';
 import { validateGSTIN } from '../../utils/validators';
 import logger from '../../utils/logger';
 import { PaginatedResponse } from '../../types/customTypes';
- 
+import { Tenant } from '../../entities/Tenant';
+import { AuthService } from '../auth/AuthService';
+
+import * as jwt from "jsonwebtoken";
+  export interface AuthPayload {
+
+  userId: string;
+
+  tenantId: string;
+
+  email: string;
+
+  role: string;
+
+  permissions: string[];
+
+  firstName: string;
+
+  lastName: string;
+
+}
 export class CustomerService {
   private customerRepository: Repository<Customer>;
+  private subscriptionRepository: Repository<Subscription>;
+  private userRepository: Repository<User>;
+   private refreshTokens: Set<string>;
  
   constructor() {
     this.customerRepository = AppDataSource.getRepository(Customer);
+    this.subscriptionRepository = AppDataSource.getRepository(Subscription);
+    this.userRepository = AppDataSource.getRepository(User);
+        this.refreshTokens = new Set();
   }
  
   //async createCustomer(tenantId: string, customerData: any): Promise<Customer> {
@@ -92,6 +120,7 @@ if (!completeCustomer) {
     search?: string;
   }
 ): Promise<PaginatedResponse<Customer>> {
+const today = new Date();
   try {
     const { page, limit, search } = options;
     const skip = (page - 1) * limit;
@@ -116,6 +145,48 @@ if (!completeCustomer) {
       order: { createdAt: "DESC" },
     });
 
+
+for (const customer of customers) {
+  let tenantIdToCheck = null;
+  let userstatus = null;
+
+  // requestedBy admin
+  if (customer.requestedBy && customer.requestedBy.role !== "professional") {
+    tenantIdToCheck = customer.requestedBy?.tenantId ?? null;
+    userstatus = customer.requestedBy?.status ?? null;
+  }
+
+  // requestedTo admin
+  if (customer.requestedTo && customer.requestedTo.role !== "professional") {
+    tenantIdToCheck = customer.requestedTo?.tenantId ?? null;
+    userstatus = customer.requestedTo?.status ?? null;
+  }
+
+  // Default no subscription
+  let subs = 0;
+
+  if (tenantIdToCheck) {
+    const [, count] = await this.subscriptionRepository.findAndCount({
+      where: {
+        tenantId: tenantIdToCheck,
+        endDate: MoreThanOrEqual(today),
+      },
+    });
+
+    subs = count;
+  }
+
+  // ✔ FIX: only active status + subscription
+  customer.checkSubscription =
+    subs > 0 && userstatus === UserStatus.ACTIVE
+      ? "active"
+      : "inactive";
+}
+
+
+
+
+// console.log("customers", customers);
     return {
       data: customers,
       pagination: {
@@ -131,62 +202,6 @@ if (!completeCustomer) {
   }
 }
 
-  // async getCustomers(tenantId: string, options: {
-  //   page: number;
-  //   limit: number;
-  //   search?: string;
-  // }): Promise<PaginatedResponse<Customer>> {
-  //   try {
-  //     const { page, limit, search } = options;
-  //     const skip = (page - 1) * limit;
- 
-  //     let whereConditions: any = {
-  //       tenantId,
-  //       status: 'Approved',
-  //       deletedAt: IsNull()
-  //     };
- 
-  //     if (search) {
-  //       whereConditions = [
-  //         {
-  //           tenantId,
-  //           name: ILike(`%${search}%`),
-  //           deletedAt: IsNull()
-  //         },
-  //         {
-  //           tenantId,
-  //           email: ILike(`%${search}%`),
-  //           deletedAt: IsNull()
-  //         },
-  //         {
-  //           tenantId,
-  //           phone: ILike(`%${search}%`),
-  //           deletedAt: IsNull()
-  //         }
-  //       ];
-  //     }
- 
-  //     const [customers, total] = await this.customerRepository.findAndCount({
-  //       where: whereConditions,
-  //       skip,
-  //       take: limit,
-  //       order: { createdAt: 'DESC' }
-  //     });
- 
-  //     return {
-  //       data: customers,
-  //       pagination: {
-  //         page,
-  //         limit,
-  //         total,
-  //         pages: Math.ceil(total / limit)
-  //       }
-  //     };
-  //   } catch (error) {
-  //     logger.error('Error fetching customers:', error);
-  //     throw error;
-  //   }
-  // }
  
   async updateCustomer(tenantId: string, customerId: string, updates: any): Promise<Customer> {
     try {
@@ -323,6 +338,134 @@ if (!completeCustomer) {
       limit: options.limit,
     };
   }
+
+async updateUser(tenantId: string, loggedtenantId: string, loggedId: string): Promise<User> {
+  try {
+    const user = await this.userRepository.findOne({
+      where: { id: loggedId, status: UserStatus.ACTIVE },
+      relations: ['tenant']
+    });
+
+    if (!user) throw new Error('User not found');
+
+    // Proper way to update FK
+    user.tenant = { id: tenantId } as Tenant;
+
+    user.backupTenantId = loggedtenantId;
+    user.role = UserRole.PROFESSIONAL_USER;
+
+    await this.userRepository.save(user);
+
+const updated = await this.userRepository.findOne({
+      where: { id: loggedId },
+      relations: ['tenant']
+    });
+
+    if (!updated) throw new Error("User updated but cannot fetch again");
+
+    return updated;
+
+  } catch (error) {
+    logger.error('Error updating user:', error);
+    throw error;
+  }
+}
+
+
+ async switchTenant(
+
+  payload: AuthPayload
+
+): Promise<{ user: AuthPayload; accessToken: string; refreshToken: string }> {
+
+
+
+  const updatedPayload: AuthPayload = {
+
+    userId: payload.userId,
+
+    tenantId: payload.tenantId,
+
+    email: payload.email,
+
+    role: payload.role,
+
+    permissions: payload.permissions || [],
+
+    firstName: payload.firstName,
+
+    lastName: payload.lastName
+
+  };
+
+
+
+  // Generate tokens
+
+  const accessToken = this.generateToken(payload);
+
+  const refreshToken = this.generateRefreshToken(payload);
+
+  this.refreshTokens.add(refreshToken);
+
+
+
+  // Fetch user from DB
+
+  const user = await AppDataSource.getRepository(User).findOne({
+
+    where: { id: payload.userId }
+
+  });
+
+
+
+  if (!user) {
+
+    throw new Error("User not found");
+
+  }
+
+
+
+
+
+
+
+  return { user: updatedPayload, accessToken, refreshToken };
+
+}
+
+
+
+  private generateToken(payload: AuthPayload): string {
+
+    return jwt.sign(payload, process.env.JWT_SECRET!, {
+
+      expiresIn: process.env.JWT_EXPIRES_IN || "1d", // short expiry for access tokens
+
+    });
+
+  }
+
+
+
+  /**
+
+   * Generate JWT Refresh Token
+
+   */
+
+  private generateRefreshToken(payload: AuthPayload): string {
+
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET!, {
+
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+
+    });
+
+  }
+
 }
 
 
@@ -338,4 +481,60 @@ if (!completeCustomer) {
 
 
 
+  // async getCustomers(tenantId: string, options: {
+  //   page: number;
+  //   limit: number;
+  //   search?: string;
+  // }): Promise<PaginatedResponse<Customer>> {
+  //   try {
+  //     const { page, limit, search } = options;
+  //     const skip = (page - 1) * limit;
+ 
+  //     let whereConditions: any = {
+  //       tenantId,
+  //       status: 'Approved',
+  //       deletedAt: IsNull()
+  //     };
+ 
+  //     if (search) {
+  //       whereConditions = [
+  //         {
+  //           tenantId,
+  //           name: ILike(`%${search}%`),
+  //           deletedAt: IsNull()
+  //         },
+  //         {
+  //           tenantId,
+  //           email: ILike(`%${search}%`),
+  //           deletedAt: IsNull()
+  //         },
+  //         {
+  //           tenantId,
+  //           phone: ILike(`%${search}%`),
+  //           deletedAt: IsNull()
+  //         }
+  //       ];
+  //     }
+ 
+  //     const [customers, total] = await this.customerRepository.findAndCount({
+  //       where: whereConditions,
+  //       skip,
+  //       take: limit,
+  //       order: { createdAt: 'DESC' }
+  //     });
+ 
+  //     return {
+  //       data: customers,
+  //       pagination: {
+  //         page,
+  //         limit,
+  //         total,
+  //         pages: Math.ceil(total / limit)
+  //       }
+  //     };
+  //   } catch (error) {
+  //     logger.error('Error fetching customers:', error);
+  //     throw error;
+  //   }
+  // }
 

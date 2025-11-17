@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth/AuthService';
-
+import { Tenant } from "../entities/Tenant";
+import { AppDataSource } from "../config/database";
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService , private tenantRepo = AppDataSource.getRepository(Tenant)) {}
 
 
    async registerWithTenant(req: Request, res: Response): Promise<void> {
@@ -54,7 +55,29 @@ export class AuthController {
       });
     }
   }
+async meWithTenant(req: Request, res: Response) {
+  try {
+    const userData = req.user;
+    //console.log('meWithTenant userData:', userData);
+    if (!userData) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
+    const tenant = await this.tenantRepo.findOne({
+      where: { id: userData.tenantId }
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ message: "Tenant not found" });
+    }
+
+    // const professionals = await this.service.getProfessionals(user);
+   //  res.json(user);
+      res.json({ success: true, user: userData, tenant });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+}
   async login(req: Request, res: Response) {
    // console.log('Login request body:', req.body);
 
