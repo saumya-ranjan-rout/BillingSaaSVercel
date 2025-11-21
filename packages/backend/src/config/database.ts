@@ -114,12 +114,12 @@ export const AppDataSource = new DataSource({
 // ✅ Call this at app startup
 export const initializeDatabase = async () => {
   try {
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-      logger.info('✅ Database connection established');
-    }
+    if (AppDataSource.isInitialized) return AppDataSource;
+    await AppDataSource.initialize();
+    logger.info("✅ Database connection established");
+    return AppDataSource;
   } catch (error) {
-    logger.error('❌ Database connection failed:', error);
+    logger.error("❌ Database connection failed:", error);
     throw error;
   }
 };
