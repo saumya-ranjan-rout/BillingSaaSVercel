@@ -64,3 +64,16 @@
 {"level":"info","message":"✅ Database connection established","service":"billing-saas-api","timestamp":"2025-11-21 18:12:51:1251"}
 {"level":"info","message":"Database connected successfully","service":"billing-saas-api","timestamp":"2025-11-21 18:12:51:1251"}
 {"level":"info","message":"Server running on port 3001 in development mode","service":"billing-saas-api","timestamp":"2025-11-21 18:12:51:1251"}
+{"level":"info","message":"✅ Redis connected","service":"billing-saas-api","timestamp":"2025-11-21 18:16:11:1611"}
+{"level":"info","message":"✅ Database connection established","service":"billing-saas-api","timestamp":"2025-11-21 18:16:12:1612"}
+{"level":"info","message":"Database connected successfully","service":"billing-saas-api","timestamp":"2025-11-21 18:16:12:1612"}
+{"level":"info","message":"Server running on port 3001 in development mode","service":"billing-saas-api","timestamp":"2025-11-21 18:16:12:1612"}
+{"level":"info","message":"🧹 Cleared 1 cache keys matching invoices:221ccd12-e9b2-4f39-9cfe-81bdbed59edc:*","service":"billing-saas-api","timestamp":"2025-11-21 18:17:11:1711"}
+{"level":"info","message":"🧹 Cleared 1 cache keys matching cache:221ccd12-e9b2-4f39-9cfe-81bdbed59edc:/api/invoices*","service":"billing-saas-api","timestamp":"2025-11-21 18:17:11:1711"}
+{"level":"info","message":"🧹 Cleared 2 cache keys matching *Invoice*221ccd12-e9b2-4f39-9cfe-81bdbed59edc*","service":"billing-saas-api","timestamp":"2025-11-21 18:17:11:1711"}
+{"level":"info","message":"Processing loyalty for invoice: 3087cd40-ffd1-4748-9d8a-56e066cfaf7d, totalAmount: 3129.45, type: string","service":"billing-saas-api","timestamp":"2025-11-21 18:17:11:1711"}
+{"level":"info","message":"No cashback earned for invoice 3087cd40-ffd1-4748-9d8a-56e066cfaf7d - amount below threshold","service":"billing-saas-api","timestamp":"2025-11-21 18:17:11:1711"}
+{"id":"3087cd40-ffd1-4748-9d8a-56e066cfaf7d","level":"info","message":"Invoice updated in 163ms","service":"billing-saas-api","tenantId":"221ccd12-e9b2-4f39-9cfe-81bdbed59edc","timestamp":"2025-11-21 18:17:11:1711"}
+{"level":"info","message":"Processing loyalty for invoice: 3087cd40-ffd1-4748-9d8a-56e066cfaf7d, totalAmount: 3129.45, type: string","service":"billing-saas-api","timestamp":"2025-11-21 18:17:13:1713"}
+{"level":"info","message":"No cashback earned for invoice 3087cd40-ffd1-4748-9d8a-56e066cfaf7d - amount below threshold","service":"billing-saas-api","timestamp":"2025-11-21 18:17:13:1713"}
+{"level":"info","message":"Loyalty processing completed for invoice: 3087cd40-ffd1-4748-9d8a-56e066cfaf7d","service":"billing-saas-api","timestamp":"2025-11-21 18:17:13:1713"}
