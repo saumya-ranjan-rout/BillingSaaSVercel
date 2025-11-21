@@ -89,6 +89,7 @@ class ProductController {
                 return res.status(401).json({ error: 'Unauthorized' });
             const { id } = req.params;
             const tenantId = req.user.tenantId;
+            console.log("oye:", req.body);
             const product = await this.productService.updateProduct(tenantId, id, req.body);
             await Promise.all([
                 this.cacheService.del(`products:${tenantId}:${id}`),

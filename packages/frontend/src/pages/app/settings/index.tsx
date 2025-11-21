@@ -70,9 +70,13 @@ export default function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <div className="settings-container w-full px-6 py-6">
 
+        {/* Page Title */}
+        <h1 className="settings-title mb-1">Settings</h1>
+        <p className="settings-subtitle mb-6">Manage your company information</p>
+
+        {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="bg-white shadow rounded-lg p-6 space-y-4"

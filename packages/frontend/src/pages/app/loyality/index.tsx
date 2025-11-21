@@ -108,13 +108,13 @@ const LoyaltyPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="loyalty-container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Loyalty Program</h1>
+          <h1 className="loyalty-page-title">Loyalty Program</h1>
           <Button onClick={handleOpenSettings}>Program Settings</Button>
         </div>
 
-        {/* 🔹 Customer Selector (tenant-scoped) */}
+        {/* Customer Selector */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Customer

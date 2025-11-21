@@ -1,0 +1,15 @@
+{
+  "summary": {
+    "totalInvoices": 0,
+    "totalTaxableValue": 0,
+    "totalTaxAmount": 0,
+    "totalCessAmount": 0,
+    "b2bCount": 0,
+    "b2cCount": 0,
+    "exportCount": 0
+  },
+  "b2bInvoices": [],
+  "b2cInvoices": [],
+  "exportInvoices": [],
+  "hsnSummary": {}
+}

@@ -1,16 +1,24 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { 
-  Home, 
-  Users, 
-  FileText, 
-  Settings, 
-  X,
+import {
+  Home,
+  Users,
+  UserCircle,
+  UserCog,
+  FileText,
+  ShoppingCart,
+  Receipt,
+  BadgePercent,
+  LineChart,
+  Settings,
+ X,
   CreditCard,
   BarChart3,
   Package,
-  User
-} from 'lucide-react';
+  User as UserIcon
+} from "lucide-react";
+
+
 import { cn } from '../../../lib/utils';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -39,18 +47,16 @@ interface User {
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/app/dashboard', icon: Home },
   { name: 'Users', href: '/app/users', icon: Users },
-  { name: 'Customers', href: '/app/customers', icon: Users },
-  { name: 'Vendors', href: '/app/vendors', icon: Users },
+  { name: 'Customers', href: '/app/customers', icon: UserCircle },
+  { name: 'Vendors', href: '/app/vendors', icon: UserCog },
   { name: 'Products', href: '/app/products', icon: Package },
-  { name: 'Purchases', href: '/app/purchases', icon: FileText },
-  { name: 'Invoices', href: '/app/invoices', icon: FileText },
+  { name: 'Purchases', href: '/app/purchases', icon: ShoppingCart },
+  { name: 'Invoices', href: '/app/invoices', icon: Receipt },        // FIXED
   { name: 'Billing', href: '/app/subscription', icon: CreditCard },
-  { name: 'Loyalty', href: '/app/loyality', icon: BarChart3 },
-  { name: 'Reports', href: '/app/reports', icon: BarChart3 },
+  { name: 'Loyalty', href: '/app/loyality', icon: BadgePercent },
+  { name: 'Reports', href: '/app/reports', icon: LineChart },         // maybe TrendingUp
   { name: 'Settings', href: '/app/settings', icon: Settings },
-
-    { name: 'Request', href: '/app/professional-requests', icon: User },
-  //  { name: 'Super Admin', href: '/SuperAdminPage', icon: User },
+  { name: 'Request', href: '/app/professional-requests', icon: UserIcon },  // FIXED
 ];
 
 

@@ -29,9 +29,9 @@ const Products: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="products-container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+          <h1 className="products-page-title">Products</h1>
           <Button onClick={() => setIsFormOpen(true)}>
             Add Product
           </Button>

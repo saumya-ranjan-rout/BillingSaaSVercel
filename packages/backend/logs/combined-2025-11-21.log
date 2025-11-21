@@ -1,0 +1,7 @@
+{"level":"info","message":"✅ Redis connected","service":"billing-saas-api","timestamp":"2025-11-21 10:00:29:029"}
+{"level":"info","message":"✅ Database connection established","service":"billing-saas-api","timestamp":"2025-11-21 10:00:30:030"}
+{"level":"info","message":"Database connected successfully","service":"billing-saas-api","timestamp":"2025-11-21 10:00:30:030"}
+{"level":"info","message":"Server running on port 3001 in development mode","service":"billing-saas-api","timestamp":"2025-11-21 10:00:30:030"}
+{"level":"info","message":"🧹 Cleared 1 cache keys matching products:221ccd12-e9b2-4f39-9cfe-81bdbed59edc:*","service":"billing-saas-api","timestamp":"2025-11-21 10:11:47:1147"}
+{"level":"info","message":"🧹 Cleared 2 cache keys matching cache:221ccd12-e9b2-4f39-9cfe-81bdbed59edc:/api/products*","service":"billing-saas-api","timestamp":"2025-11-21 10:11:47:1147"}
+{"id":"2de3691d-b791-4a02-ae02-2491241be824","level":"info","message":"Product updated in 52ms","service":"billing-saas-api","tenantId":"221ccd12-e9b2-4f39-9cfe-81bdbed59edc","timestamp":"2025-11-21 10:11:47:1147"}

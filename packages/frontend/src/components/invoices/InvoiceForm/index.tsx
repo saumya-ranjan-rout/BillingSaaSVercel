@@ -25,6 +25,9 @@ const invoiceItemSchema = z.object({
   unitPrice: z.number().min(0.01, 'Unit price must be positive'),
   discount: z.number().min(0).max(100).default(0),
   taxRate: z.number().min(0).max(100).default(0),
+tax_type: z.string().min(1, 'Tax Type is required').optional(),
+has_cess: z.boolean().default(false),
+cess_value: z.number().min(0).max(100).default(0),
 });
 
 const invoiceSchema = z.object({
@@ -103,6 +106,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoice, onSuccess, onCancel 
           unitPrice: 0,
           discount: 0,
           taxRate: 0,
+           tax_type: "cgst_sgst",
+  has_cess: false,
+  cess_value: 0,
+
+
         },
       ],
     },
@@ -210,6 +218,9 @@ setCashbackInvoiceId(invoiceIds);
   unitPrice: Number(item.unitPrice) || 0,
   discount: Number(item.discount) || 0,
   taxRate: Number(item.taxRate) || 0,
+  // tax_type: item.taxName || "cgst_sgst",
+  // has_cess: item.has_cess || false,
+  // cess_value: Number(item.cess_value) || 0,
 })),
       });
     }
@@ -229,13 +240,38 @@ setCashbackInvoiceId(invoiceIds);
     return date.toISOString().split('T')[0];
   };
 
+  // const calculateItemTotals = (item: any) => {
+  //   const discountAmount = (item.unitPrice * item.quantity * item.discount) / 100;
+  //   const taxableAmount = item.unitPrice * item.quantity - discountAmount;
+  //   const taxAmount = (taxableAmount * item.taxRate) / 100;
+  //   const lineTotal = taxableAmount + taxAmount;
+  //   return { discountAmount, taxAmount, lineTotal };
+  // };
   const calculateItemTotals = (item: any) => {
-    const discountAmount = (item.unitPrice * item.quantity * item.discount) / 100;
-    const taxableAmount = item.unitPrice * item.quantity - discountAmount;
-    const taxAmount = (taxableAmount * item.taxRate) / 100;
-    const lineTotal = taxableAmount + taxAmount;
-    return { discountAmount, taxAmount, lineTotal };
-  };
+  const discountAmount = (item.unitPrice * item.quantity * item.discount) / 100;
+  const taxableAmount = item.unitPrice * item.quantity - discountAmount;
+// alert(item.tax_type);
+  let taxAmount = 0;
+
+  if (item.tax_type === "cgst_sgst") {
+    // total taxRate split into CGST + SGST
+    taxAmount = (taxableAmount * item.taxRate) / 100;
+  }
+
+  if (item.tax_type === "igst") {
+    // IGST → full taxRate
+    taxAmount = (taxableAmount * item.taxRate) / 100;
+  }
+
+  const cessAmount = item.has_cess
+    ? (taxableAmount * item.cess_value) / 100
+    : 0;
+
+  const lineTotal = taxableAmount + taxAmount + cessAmount;
+
+  return { discountAmount, taxAmount, cessAmount, lineTotal };
+};
+
 
   const calculateOrderTotals = (items: any[]) => {
   //  alert('redeemedPoints'+redeemedPoints);
@@ -244,7 +280,7 @@ setCashbackInvoiceId(invoiceIds);
       const totals = calculateItemTotals(item);
       subTotal += item.unitPrice * item.quantity;
       discountTotal += totals.discountAmount;
-      taxTotal += totals.taxAmount;
+      taxTotal += totals.taxAmount+totals.cessAmount;
     });
     return { subTotal, taxTotal, discountTotal, totalAmount: subTotal - discountTotal + taxTotal,dueTotal:(subTotal - discountTotal + taxTotal)-cashBack};
   };
@@ -421,7 +457,7 @@ setCashbackInvoiceId(invoiceIds);
 
       {/* Items */}
       <div className="border-t pt-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Items {products.length}</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Items</h3>
         {fields.map((field, index) => (
           <div key={field.id} className="border rounded-lg p-4 mb-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -480,7 +516,7 @@ setCashbackInvoiceId(invoiceIds);
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <Input
                   label="Unit Price (₹)"
                   type="number"
@@ -501,6 +537,19 @@ setCashbackInvoiceId(invoiceIds);
                   disabled={isSubmitting}
                 />
               </div>
+    <div className="md:col-span-2">
+        <label className="text-sm font-medium text-gray-700 mb-1">Tax Type</label>
+  <select
+{...register(`items.${index}.tax_type`)}
+    className="w-full border p-2 rounded"
+  >
+    {/* <option value="">Select Tax Type</option> */}
+    <option value="cgst_sgst">CGST & SGST</option>
+    <option value="igst">IGST</option>
+  </select>
+</div>
+
+
 
               <div className="md:col-span-2">
                 <Input
@@ -512,7 +561,31 @@ setCashbackInvoiceId(invoiceIds);
                   disabled={isSubmitting}
                 />
               </div>
+              {/* CESS CHECKBOX */}
+  <div className="md:col-span-1">
+  <input
+    type="checkbox"
+    {...register(`items.${index}.has_cess`)}
+  />CESS
+</div>
 
+{/* CONDITIONAL CESS FIELD */}
+
+  {watch(`items.${index}.has_cess`) && (
+     <div className="md:col-span-3">
+
+     <Input
+                  label="CESS Rate (%)"
+                  type="number"
+                  step="0.01"
+                  {...register(`items.${index}.cess_value`, { valueAsNumber: true })}
+                  error={errors.items?.[index]?.cess_value?.message}
+                  disabled={isSubmitting}
+                />
+  </div>
+  )}
+
+ 
               <div className="md:col-span-3">
                 <Input
                   label="Line Total (₹)"
@@ -552,6 +625,9 @@ setCashbackInvoiceId(invoiceIds);
               unitPrice: 0,
               discount: 0,
               taxRate: 0,
+              tax_type: 'cgst_sgst',
+              has_cess: false,
+              cess_value: 0
             })
           }
           disabled={isSubmitting}

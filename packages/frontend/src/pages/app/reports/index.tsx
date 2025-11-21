@@ -28,10 +28,14 @@ const Reports: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="reports-container mx-auto px-4 py-6">
+        
+        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Compliance Reports</h1>
-          <p className="text-gray-600">Generate GST, Income Tax, and other compliance reports</p>
+          <h1 className="reports-page-title">Compliance Reports</h1>
+          <p className="reports-subtitle">
+            Generate GST, Income Tax, and other compliance reports
+          </p>
         </div>
 
         {/* Tab Navigation */}
@@ -39,24 +43,25 @@ const Reports: React.FC = () => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('generate')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`reports-tab-btn ${
                 activeTab === 'generate'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'reports-tab-active'
+                  : 'reports-tab-inactive'
               }`}
             >
               Generate Report
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`reports-tab-btn ${
                 activeTab === 'history'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'reports-tab-active'
+                  : 'reports-tab-inactive'
               }`}
             >
               Report History
             </button>
+
           </nav>
         </div>
 

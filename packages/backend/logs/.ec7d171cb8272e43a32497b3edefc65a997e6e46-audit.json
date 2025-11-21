@@ -39,6 +39,11 @@
             "date": 1763612778170,
             "name": "E:\\BillingSoftware\\packages\\backend\\logs\\error-2025-11-20.log",
             "hash": "04cd43b92116e19e9786f8b487aab8515dc00d01781a585367fc60adba85aba2"
+        },
+        {
+            "date": 1763699421020,
+            "name": "E:\\BillingSoftware\\packages\\backend\\logs\\error-2025-11-21.log",
+            "hash": "c3a12cbdc7dcdd052fac965bec3c6e328960cf57723116e1b60219311bb9aa75"
         }
     ],
     "hashType": "sha256"

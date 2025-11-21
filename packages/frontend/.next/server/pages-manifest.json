@@ -1,8 +1,1 @@
-{
-  "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
-  "/_document": "pages/_document.js",
-  "/app/subscription": "pages/app/subscription.js",
-  "/app/products": "pages/app/products.js",
-  "/app/invoices": "pages/app/invoices.js"
-}
+{"/_app":"pages/_app.js","/_error":"pages/_error.js","/_document":"pages/_document.js","/ProfessionalOnboardingPage":"pages/ProfessionalOnboardingPage.html","/SuperAdminPage":"pages/SuperAdminPage.html","/TenantOnboardingPage":"pages/TenantOnboardingPage.html","/VendorsPage":"pages/VendorsPage.html","/api/dashboard":"pages/api/dashboard.js","/api/stripe/create-checkout-session":"pages/api/stripe/create-checkout-session.js","/app/billing/history":"pages/app/billing/history.html","/app/billing":"pages/app/billing.html","/app/billing/payment-methods":"pages/app/billing/payment-methods.html","/app/billing/subscription":"pages/app/billing/subscription.html","/app/customers":"pages/app/customers.html","/app/dashboard":"pages/app/dashboard.html","/app/invoices":"pages/app/invoices.html","/app/loyality":"pages/app/loyality.html","/app/products":"pages/app/products.html","/app/professional-requests":"pages/app/professional-requests.html","/app/purchases":"pages/app/purchases.html","/app/reports/gstr1":"pages/app/reports/gstr1.html","/app/reports":"pages/app/reports.html","/app/reports/sales":"pages/app/reports/sales.html","/app/settings":"pages/app/settings.html","/app/subscription":"pages/app/subscription.html","/app/users":"pages/app/users.html","/app/vendors":"pages/app/vendors.html","/appindex":"pages/appindex.html","/auth/forgot-password/forgot-password":"pages/auth/forgot-password/forgot-password.html","/auth/login":"pages/auth/login.html","/auth/login1":"pages/auth/login1.html","/auth/register":"pages/auth/register.html","/auth/super-user-login":"pages/auth/super-user-login.html","/auth/super-user-login1":"pages/auth/super-user-login1.html","/":"pages/index.html","/404":"pages/404.html"}

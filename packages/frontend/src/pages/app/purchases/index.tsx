@@ -29,9 +29,9 @@ const Purchases: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="purchases-container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Purchase Orders</h1>
+          <h1 className="purchases-page-title">Purchase Orders</h1>
           <Button onClick={() => setIsFormOpen(true)}>
             Create Purchase Order
           </Button>

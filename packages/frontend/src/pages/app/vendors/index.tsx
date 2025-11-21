@@ -29,9 +29,9 @@ const Vendors: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="vendors-container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Vendors</h1>
+          <h1 className="vendors-page-title">Vendors</h1>
           <Button onClick={() => setIsFormOpen(true)}>
             Add Vendor
           </Button>
@@ -43,7 +43,7 @@ const Vendors: React.FC = () => {
           isOpen={isFormOpen}
           onClose={handleCloseForm}
           title={editingVendor ? 'Edit Vendor' : 'Add Vendor'}
-          size="lg"
+          size="xl"
         >
           <VendorForm
               vendor={editingVendor ?? undefined} 

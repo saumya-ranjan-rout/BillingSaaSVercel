@@ -122,7 +122,7 @@ exports.productSchema = joi_1.default.object({
     sellingPrice: joi_1.default.number().min(0).required(),
     stockQuantity: joi_1.default.number().min(0).default(0),
     lowStockThreshold: joi_1.default.number().min(0).default(0),
-    unit: joi_1.default.string().optional(),
+    unit: joi_1.default.string().allow("").optional(),
     taxRate: joi_1.default.number().min(0).max(100).default(0),
     categoryName: joi_1.default.string().optional(),
     categoryId: joi_1.default.string().optional(),

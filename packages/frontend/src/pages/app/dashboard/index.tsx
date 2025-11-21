@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
             <div className="text-gray-500 mb-4">{error}</div>
             <button
               onClick={fetchDashboardData}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+              className="btn-gray"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
@@ -139,9 +139,9 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="dashboard-title">Dashboard</h1>
             {lastUpdated && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="dashboard-subtitle mt-1">
                 Last updated: {lastUpdated}
               </p>
             )}
@@ -203,7 +203,7 @@ const Dashboard: React.FC = () => {
         {/* Recent Invoices & Customers */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Invoices */}
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="dashboard-card">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900">
                 Recent Invoices
@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
   </button>
 </Link>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {filteredInvoices.map((invoice) => (
                 <div
                   key={invoice.id}
@@ -248,7 +248,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Recent Customers */}
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="dashboard-card">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900">
                 Recent Customers
@@ -259,19 +259,17 @@ const Dashboard: React.FC = () => {
   </button>
 </Link>
             </div>
-            <div className="space-y-4">
+
+            <div className="space-y-2">
               {dashboardData.recentCustomers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className="flex items-center py-2 border-b border-gray-100"
-                >
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="font-medium text-blue-800">
+                <div key={customer.id} className="list-row flex items-center">
+                  <div className="avatar-circle">
                       {customer.name.charAt(0)}
-                    </span>
                   </div>
                   <div className="ml-4">
-                    <p className="font-medium text-gray-900">{customer.name}</p>
+                    <p className="font-medium text-gray-900">
+                      {customer.name}
+                    </p>
                     <p className="text-sm text-gray-500">{customer.email}</p>
                   </div>
                   <div className="ml-auto text-sm text-gray-500">
@@ -285,13 +283,12 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Revenue Chart */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="dashboard-card">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">
               Revenue Overview
             </h2>
-          </div>
-          <div className="h-72">
+
+          <div className="h-72 chart-wrapper">
             {revenueData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={revenueData}>

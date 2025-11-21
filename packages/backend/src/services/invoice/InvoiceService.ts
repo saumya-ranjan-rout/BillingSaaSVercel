@@ -13,6 +13,9 @@ import PDFDocument from "pdfkit";
 import { LoyaltyService } from '../loyalty/LoyaltyService';
 import { CacheService } from '../cache/CacheService';
 import { TaxDetail } from '../../entities/TaxDetail';
+//Newly added
+import fs from 'fs';
+import path from 'path';
 
 
 export class InvoiceService {
@@ -1086,6 +1089,31 @@ this.cacheService.invalidatePattern(`cache:${tenantId}:/api/invoices*`),
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ margin: 50 });
+
+        // ===== WATERMARK (center logo) =====
+        const watermarkPath = path.resolve(__dirname, "../../../public/logo.png");
+
+        if (fs.existsSync(watermarkPath)) {
+            // Get page width & height
+            const { width, height } = doc.page;
+
+            // Save current transparency state
+            doc.save();
+
+            // Set Opacity (10% is ideal)
+            doc.opacity(0.10);
+
+            // Insert watermark centered
+            doc.image(watermarkPath, width / 2 - 150, height / 2 - 150, {
+                width: 300,   // scale watermark size
+                align: "center",
+                valign: "center",
+            });
+
+            // Restore normal opacity
+            doc.restore();
+        }
+
         const chunks: Buffer[] = [];
 
         doc.on("data", (chunk) => chunks.push(chunk));
@@ -1096,7 +1124,15 @@ this.cacheService.invalidatePattern(`cache:${tenantId}:/api/invoices*`),
           isNaN(Number(value)) ? "0.00" : Number(value).toFixed(2);
 
         // ===== HEADER =====
-        doc.fontSize(22).text("INVOICE", { align: "center", underline: true });
+
+        const logoPath = path.resolve(__dirname, "../../../public/logo.png");
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, 50, 45, { width: 100 });
+        }
+
+        doc.fontSize(24)
+        .font("Helvetica-Bold")
+        .text("INVOICE", { align: "center", underline: true });
         doc.moveDown(1.5);
 
         // LEFT: Company Info
@@ -1161,28 +1197,31 @@ this.cacheService.invalidatePattern(`cache:${tenantId}:/api/invoices*`),
 
         // ===== TOTALS =====
         doc.moveTo(350, doc.y).lineTo(550, doc.y).stroke();
-        doc.moveDown(0.5);
+        doc.moveDown(1);
 
-        const totalsY = doc.y;
-        doc.fontSize(10);
+        const lineGap = 15;
+        let ty = doc.y;
 
-        doc.text("Subtotal:", 360, totalsY);
-        doc.text(toAmount(invoice.subTotal), 500, totalsY, { align: "right" });
+        const addLine = (label: string, value: any, bold = false) => {
+          doc.font(bold ? "Helvetica-Bold" : "Helvetica");
+          doc.text(label, 360, ty);
+          doc.text(toAmount(value), 500, ty, { align: "right" });
+          ty += lineGap;
+        };
 
-        doc.text("Tax:", 360, doc.y);
-        doc.text(toAmount(invoice.taxTotal), 500, doc.y, { align: "right" });
+        addLine("Subtotal:", invoice.subTotal);
+        addLine("Tax:", invoice.taxTotal);
+        addLine("Discount:", invoice.discountTotal);
+        addLine("Total:", invoice.totalAmount, true);
+        addLine("Balance Due:", invoice.balanceDue, true);
 
-        doc.text("Discount:", 360, doc.y);
-        doc.text(toAmount(invoice.discountTotal), 500, doc.y, { align: "right" });
-
-        doc.font("Helvetica-Bold").text("Total:", 360, doc.y);
-        doc.text(toAmount(invoice.totalAmount), 500, doc.y, { align: "right" });
-
-        doc.text("Balance Due:", 360, doc.y);
-        doc.text(toAmount(invoice.balanceDue), 500, doc.y, { align: "right" });
         doc.font("Helvetica");
+        doc.moveDown(3);
 
+        // ===== FOOTER =====
+        // Reset cursor to left margin for full-width footer
         doc.moveDown(2);
+        doc.text("", 50);
 
         // ===== FOOTER =====
         doc.fontSize(9).fillColor("gray").text("Thank you for your business!", { align: "center" });

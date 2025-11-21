@@ -6,11 +6,22 @@ import ProfessionalRequestForm from "@/components/professionalRequests/Professio
 const ProfessionalRequestsPage = () => {
   return (
     <DashboardLayout>
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Professional Requests</h2>
+      <div className="prof-container w-full mx-auto px-6 py-6">
+
+        {/* Page Title */}
+        <h1 className="prof-page-title mb-6">Professional Requests</h1>
+
+        {/* Form Card */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
       <ProfessionalRequestForm />
+        </div>
+
+        {/* List Card */}
+        <div className="bg-white shadow rounded-lg p-6">
       <ProfessionalRequestList />
     </div>
+
+      </div>
     </DashboardLayout>
   );
 };

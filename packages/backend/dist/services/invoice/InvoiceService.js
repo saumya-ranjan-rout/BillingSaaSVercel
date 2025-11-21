@@ -16,6 +16,8 @@ const pdfkit_1 = __importDefault(require("pdfkit"));
 const LoyaltyService_1 = require("../loyalty/LoyaltyService");
 const CacheService_1 = require("../cache/CacheService");
 const TaxDetail_1 = require("../../entities/TaxDetail");
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 class InvoiceService {
     constructor() {
         this.invoiceRepository = database_1.AppDataSource.getRepository(Invoice_1.Invoice);
@@ -832,12 +834,30 @@ class InvoiceService {
         return new Promise((resolve, reject) => {
             try {
                 const doc = new pdfkit_1.default({ margin: 50 });
+                const watermarkPath = path_1.default.resolve(__dirname, "../../../public/logo.png");
+                if (fs_1.default.existsSync(watermarkPath)) {
+                    const { width, height } = doc.page;
+                    doc.save();
+                    doc.opacity(0.10);
+                    doc.image(watermarkPath, width / 2 - 150, height / 2 - 150, {
+                        width: 300,
+                        align: "center",
+                        valign: "center",
+                    });
+                    doc.restore();
+                }
                 const chunks = [];
                 doc.on("data", (chunk) => chunks.push(chunk));
                 doc.on("end", () => resolve(Buffer.concat(chunks)));
                 doc.on("error", reject);
                 const toAmount = (value) => isNaN(Number(value)) ? "0.00" : Number(value).toFixed(2);
-                doc.fontSize(22).text("INVOICE", { align: "center", underline: true });
+                const logoPath = path_1.default.resolve(__dirname, "../../../public/logo.png");
+                if (fs_1.default.existsSync(logoPath)) {
+                    doc.image(logoPath, 50, 45, { width: 100 });
+                }
+                doc.fontSize(24)
+                    .font("Helvetica-Bold")
+                    .text("INVOICE", { align: "center", underline: true });
                 doc.moveDown(1.5);
                 let y = doc.y;
                 doc.fontSize(10).text(setting.companyName || "", 50, y);
@@ -890,21 +910,24 @@ class InvoiceService {
                 }
                 doc.moveDown(2);
                 doc.moveTo(350, doc.y).lineTo(550, doc.y).stroke();
-                doc.moveDown(0.5);
-                const totalsY = doc.y;
-                doc.fontSize(10);
-                doc.text("Subtotal:", 360, totalsY);
-                doc.text(toAmount(invoice.subTotal), 500, totalsY, { align: "right" });
-                doc.text("Tax:", 360, doc.y);
-                doc.text(toAmount(invoice.taxTotal), 500, doc.y, { align: "right" });
-                doc.text("Discount:", 360, doc.y);
-                doc.text(toAmount(invoice.discountTotal), 500, doc.y, { align: "right" });
-                doc.font("Helvetica-Bold").text("Total:", 360, doc.y);
-                doc.text(toAmount(invoice.totalAmount), 500, doc.y, { align: "right" });
-                doc.text("Balance Due:", 360, doc.y);
-                doc.text(toAmount(invoice.balanceDue), 500, doc.y, { align: "right" });
+                doc.moveDown(1);
+                const lineGap = 15;
+                let ty = doc.y;
+                const addLine = (label, value, bold = false) => {
+                    doc.font(bold ? "Helvetica-Bold" : "Helvetica");
+                    doc.text(label, 360, ty);
+                    doc.text(toAmount(value), 500, ty, { align: "right" });
+                    ty += lineGap;
+                };
+                addLine("Subtotal:", invoice.subTotal);
+                addLine("Tax:", invoice.taxTotal);
+                addLine("Discount:", invoice.discountTotal);
+                addLine("Total:", invoice.totalAmount, true);
+                addLine("Balance Due:", invoice.balanceDue, true);
                 doc.font("Helvetica");
+                doc.moveDown(3);
                 doc.moveDown(2);
+                doc.text("", 50);
                 doc.fontSize(9).fillColor("gray").text("Thank you for your business!", { align: "center" });
                 if (invoice.termsAndConditions) {
                     doc.moveDown(0.5);

@@ -34,9 +34,9 @@ const triggerRefresh = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="customers-container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
+          <h1 className="customers-page-title">Customers</h1>
           <Button onClick={() => setIsFormOpen(true)}>
             Add Customer
           </Button>
@@ -48,7 +48,7 @@ const triggerRefresh = () => {
           isOpen={isFormOpen}
           onClose={handleCloseForm}
           title={editingCustomer ? 'Edit Customer' : 'Add Customer'}
-          size="lg"
+          size="xl"
         >
       <CustomerForm
   customer={editingCustomer || undefined}
