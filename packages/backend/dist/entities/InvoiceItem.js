@@ -74,6 +74,22 @@ __decorate([
     __metadata("design:type", Number)
 ], InvoiceItem.prototype, "lineTotal", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', default: 'cgst_sgst' }),
+    __metadata("design:type", String)
+], InvoiceItem.prototype, "tax_type", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], InvoiceItem.prototype, "has_cess", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], InvoiceItem.prototype, "cess_value", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 15, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], InvoiceItem.prototype, "cessAmount", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
     __metadata("design:type", Object)
 ], InvoiceItem.prototype, "metadata", void 0);

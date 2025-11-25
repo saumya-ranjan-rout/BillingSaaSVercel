@@ -16,6 +16,10 @@ export declare class InvoiceItem extends TenantAwareEntity {
     taxRate: number;
     taxAmount: number;
     lineTotal: number;
+    tax_type: string;
+    has_cess: boolean;
+    cess_value: number;
+    cessAmount: number;
     metadata: Record<string, any>;
     hsn: HSN;
 }

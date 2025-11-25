@@ -103,13 +103,14 @@ exports.AppDataSource = new typeorm_1.DataSource({
 });
 const initializeDatabase = async () => {
     try {
-        if (!exports.AppDataSource.isInitialized) {
-            await exports.AppDataSource.initialize();
-            logger_1.default.info('✅ Database connection established');
-        }
+        if (exports.AppDataSource.isInitialized)
+            return exports.AppDataSource;
+        await exports.AppDataSource.initialize();
+        logger_1.default.info("✅ Database connection established");
+        return exports.AppDataSource;
     }
     catch (error) {
-        logger_1.default.error('❌ Database connection failed:', error);
+        logger_1.default.error("❌ Database connection failed:", error);
         throw error;
     }
 };

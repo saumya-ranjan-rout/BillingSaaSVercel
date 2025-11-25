@@ -35,6 +35,18 @@ __decorate([
     __metadata("design:type", Number)
 ], TaxDetail.prototype, "taxableValue", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], TaxDetail.prototype, "hasCess", void 0);
+__decorate([
+    (0, typeorm_1.Column)('decimal', { precision: 6, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], TaxDetail.prototype, "cessRate", void 0);
+__decorate([
+    (0, typeorm_1.Column)('decimal', { precision: 15, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], TaxDetail.prototype, "cessAmount", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => Invoice_1.Invoice, invoice => invoice.taxDetails, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'invoiceId' }),
     __metadata("design:type", Invoice_1.Invoice)

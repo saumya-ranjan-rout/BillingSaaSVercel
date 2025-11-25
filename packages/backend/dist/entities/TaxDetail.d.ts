@@ -5,6 +5,9 @@ export declare class TaxDetail {
     taxRate: number;
     taxAmount: number;
     taxableValue: number;
+    hasCess: boolean;
+    cessRate: number;
+    cessAmount: number;
     invoice: Invoice;
     invoiceId: string;
     createdAt: Date;

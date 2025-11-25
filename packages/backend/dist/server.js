@@ -7,14 +7,13 @@ exports.startServer = void 0;
 require("reflect-metadata");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const app_1 = __importDefault(require("./app"));
+const app_1 = require("./app");
 const logger_1 = __importDefault(require("./utils/logger"));
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const startServer = async () => {
     try {
-        const serverInstance = new app_1.default();
-        const app = serverInstance.getApp();
+        const app = await (0, app_1.createApp)();
         const server = app.listen(PORT, HOST, () => {
             logger_1.default.info(`Server running on http://${HOST}:${PORT}`);
             logger_1.default.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -26,7 +25,7 @@ const startServer = async () => {
                 process.exit(0);
             });
             setTimeout(() => {
-                logger_1.default.error('Could not close connections in time, forcefully shutting down');
+                logger_1.default.error('Force shutdown after 10 seconds');
                 process.exit(1);
             }, 10000);
         };
@@ -37,7 +36,7 @@ const startServer = async () => {
             process.exit(1);
         });
         process.on('unhandledRejection', (reason, promise) => {
-            logger_1.default.error('Unhandled rejection at:', promise, 'reason:', reason);
+            logger_1.default.error('Unhandled rejection:', promise, 'reason:', reason);
             process.exit(1);
         });
     }
