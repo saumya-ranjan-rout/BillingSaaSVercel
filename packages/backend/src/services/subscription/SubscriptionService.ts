@@ -6,7 +6,7 @@ import { Payment, PaymentStatus, PaymentGateway } from '../../entities/Payment';
 import { User } from '../../entities/User';
 import { Tenant } from '../../entities/Tenant';
 import logger from '../../utils/logger';
-import { Plan } from '@/entities';
+import { Plan } from '../../entities';
 
 export class SubscriptionService {
   private subscriptionRepository: Repository<Subscription>;
